@@ -1,0 +1,34 @@
+name: Publicar jogo na nuvem
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extrair e preparar o site
+        run: |
+          unzip -q O-Incrivel-Mundo-de-Lucas-Completo.zip -d game
+          mkdir -p _site/assets _site/downloads
+          cp game/index.html game/manifest.webmanifest game/service-worker.js _site/
+          cp -r game/assets/. _site/assets/
+          cp game/downloads.html _site/
+          cp game/downloads/*.exe _site/downloads/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
